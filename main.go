@@ -7,16 +7,18 @@ import (
 
 func main() {
 	var list string
-	if tokens.ReadString(&list) == 1 {
+	err := tokens.ReadString(&list)
+	if err == nil {
 		var arr []tokens.Token
-		if tokens.Tokenize(list, &arr) == 1 {
+		err = tokens.Tokenize(list, &arr)
+		if err == nil {
 			for i := range arr {
 				fmt.Printf("%s\n", arr[i].Str)
 			}
 		} else {
-			// error added
+			fmt.Printf("Error: %s", err)
 		}
 	} else {
-		// error add
+		fmt.Printf("Error: %s", err)
 	}
 }
