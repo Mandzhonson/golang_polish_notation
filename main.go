@@ -8,6 +8,10 @@ import (
 func main() {
 	var list string
 	if tokens.ReadString(&list) == 1 {
-		fmt.Printf("%s", list)
+		var arr []tokens.Token
+		tokens.Tokenize(list, &arr)
+		for i := range arr {
+			fmt.Printf("%s\n", arr[i].Str)
+		}
 	}
 }
