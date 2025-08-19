@@ -24,9 +24,8 @@ func ReadString(str *string) error {
 	line, err := reader.ReadString('\n')
 	if err != nil {
 		return err
-	} else {
-		*str = line
 	}
+	*str = line
 	return nil
 }
 
@@ -118,12 +117,63 @@ func CheckParen(arr *[]Token) error {
 	return nil
 }
 
+func CheckOper(arr *[]Token) error {
+	// корректность ввода операторов
+	for i := range *arr {
+		if (*arr)[i].Tok == PlusMinus || (*arr)[i].Tok == MultDiv {
+			if i+1 >= len(*arr) || i-1 < 0 {
+				return errors.New("некорректная строка: неправильно стоят знаки")
+			} else if (*arr)[i-1].Tok == PlusMinus || (*arr)[i-1].Tok == MultDiv || (*arr)[i+1].Tok == PlusMinus || (*arr)[i+1].Tok == MultDiv {
+				return errors.New("некорректная строка: неправильно стоят знаки")
+			} else if (*arr)[i-1].Tok == LParen || (*arr)[i+1].Tok == RParen {
+				return errors.New("некорректная строка: неправильно стоят знаки")
+			}
+		}
+	}
+	for i := range *arr {
+		if (*arr)[i].Tok == Num || (*arr)[i].Tok == Var {
+			if i+1 >= len(*arr) && i-1 > 0 && (*arr)[i-1].Tok != PlusMinus && (*arr)[i-1].Tok != MultDiv {
+				return errors.New("между числами должен быть знак")
+			}
+			if (i+1 < len(*arr) && ((*arr)[i+1].Tok == Num || (*arr)[i+1].Tok == Var)) || (i-1 > 0 && ((*arr)[i-1].Tok == Num || (*arr)[i-1].Tok == Var)) {
+				return errors.New("между числами должен быть знак")
+			}
+			if i-1 == 0 && i+1 < len(*arr) && (*arr)[i-1].Tok != PlusMinus && (*arr)[i-1].Tok != MultDiv {
+				return errors.New("между числами должен быть знак")
+			}
+		}
+	}
+	return nil
+}
+
+func CheckFunc(arr *[]Token) error {
+	// проверка на то, что после функции обязательно идет скобка открывающаяся
+	for i := range *arr {
+		if (*arr)[i].Tok == Func {
+			if i+1 >= len(*arr) {
+				return errors.New("любая функция должна принимать аргумент в скобках")
+			}
+			if i+1 < len(*arr) && (*arr)[i+1].Tok != LParen {
+				return errors.New("любая функция должна принимать аргумент в скобках")
+			}
+		}
+	}
+	return nil
+}
+
 func CheckToken(arr *[]Token) error {
 	// проверка токенов на корректность для дальнейшей работы
 	err := CheckParen(arr)
 	if err != nil {
 		return err
 	}
-	// next work
+	err = CheckOper(arr)
+	if err != nil {
+		return err
+	}
+	err = CheckFunc(arr)
+	if err != nil {
+		return err
+	}
 	return nil
 }

@@ -12,7 +12,14 @@ func main() {
 		var arr []tokens.Token
 		err = tokens.Tokenize(list, &arr)
 		if err == nil {
-			tokens.CheckToken(&arr)
+			err = tokens.CheckToken(&arr)
+			if err != nil {
+				fmt.Printf("Error: %s", err)
+			} else {
+				for i := range arr {
+					fmt.Printf("%s\n", arr[i].Str)
+				}
+			}
 		} else {
 			fmt.Printf("Error: %s", err)
 		}
