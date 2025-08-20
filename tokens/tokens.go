@@ -9,13 +9,13 @@ import (
 
 // определение типа токена
 const (
-	Num       = 1
+	Num = 1
+	Var
 	PlusMinus = 2
 	MultDiv   = 3
-	LParen    = 4
-	RParen    = 5
-	Var       = 6
-	Func      = 7
+	Func      = 4
+	LParen    = 5
+	RParen    = 6
 )
 
 func ReadString(str *string) error {
