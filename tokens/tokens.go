@@ -15,7 +15,7 @@ const (
 	MultDiv   = 3
 	Func      = 4
 	LParen    = 5
-	RParen    = 6
+	RParen
 )
 
 func ReadString(str *string) error {
@@ -82,11 +82,11 @@ func CheckParen(arr *[]Token) error {
 	// далее под каждую открывающуюся скобку ищем закрывающаюся
 	count := 0
 	for i := range *arr {
-		if (*arr)[i].Tok == LParen {
+		if (*arr)[i].Str == "(" {
 			count += -1
 
 		}
-		if (*arr)[i].Tok == RParen {
+		if (*arr)[i].Str == ")" {
 			count += 1
 		}
 	}
@@ -94,17 +94,17 @@ func CheckParen(arr *[]Token) error {
 		return errors.New("нарушен баланс скобок")
 	} else {
 		for i := range *arr {
-			if (*arr)[i].Tok == RParen && count == 0 {
+			if (*arr)[i].Str == ")" && count == 0 {
 				return errors.New("неверный порядок расстановки скобок")
 			} else {
-				if (*arr)[i].Tok == LParen {
+				if (*arr)[i].Str == "(" {
 					if i+1 < len(*arr) {
 						j := i + 1
 						count -= 1
-						for (*arr)[j].Tok != RParen {
+						for (*arr)[j].Str != ")" {
 							j++
 						}
-						if (*arr)[j].Tok == RParen && j-i == 1 {
+						if (*arr)[j].Str == ")" && j-i == 1 {
 							return errors.New("пустые скобки")
 						}
 					} else {
@@ -125,7 +125,7 @@ func CheckOper(arr *[]Token) error {
 				return errors.New("некорректная строка: неправильно стоят знаки")
 			} else if (*arr)[i-1].Tok == PlusMinus || (*arr)[i-1].Tok == MultDiv || (*arr)[i+1].Tok == PlusMinus || (*arr)[i+1].Tok == MultDiv {
 				return errors.New("некорректная строка: неправильно стоят знаки")
-			} else if (*arr)[i-1].Tok == LParen || (*arr)[i+1].Tok == RParen {
+			} else if (*arr)[i-1].Str == "(" || (*arr)[i+1].Str == ")" {
 				return errors.New("некорректная строка: неправильно стоят знаки")
 			}
 		}
@@ -153,7 +153,7 @@ func CheckFunc(arr *[]Token) error {
 			if i+1 >= len(*arr) {
 				return errors.New("любая функция должна принимать аргумент в скобках")
 			}
-			if i+1 < len(*arr) && (*arr)[i+1].Tok != LParen {
+			if i+1 < len(*arr) && (*arr)[i+1].Str != "(" {
 				return errors.New("любая функция должна принимать аргумент в скобках")
 			}
 		}

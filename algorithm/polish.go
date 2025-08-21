@@ -17,7 +17,7 @@ func PolishNotation() {
 			if err != nil {
 				fmt.Printf("Error: %s", err)
 			} else {
-				Algorithm(&arr)
+				res := Algorithm(&arr)
 			}
 		} else {
 			fmt.Printf("Error: %s", err)
@@ -27,30 +27,37 @@ func PolishNotation() {
 	}
 }
 
-func Algorithm(arr *[]tokens.Token) {
+func Algorithm(arr *[]tokens.Token) []tokens.Token {
 	var st_op stack.Stack
 	st_op.Init()
-	str := ""
+	var str []tokens.Token
 	for i := range *arr {
 		if (*arr)[i].Tok == tokens.Var || (*arr)[i].Tok == tokens.Num {
-			str += (*arr)[i].Str + " " // not optimize just test
-		} else if st_op.Top == -1 && (*arr)[i].Tok != tokens.Var && (*arr)[i].Tok != tokens.Num {
-			st_op.Push(&(*arr)[i])
+			str = append(str, (*arr)[i])
+		} else if (*arr)[i].Str == "(" {
+			st_op.Push((*arr)[i])
+		} else if (*arr)[i].Str == ")" {
+			for st_op.Peek().Str != "(" && st_op.Top != -1 {
+				str = append(str, st_op.Peek())
+				st_op.Pop()
+			}
+			st_op.Pop()
 		} else {
-			if (*arr)[i].Tok > st_op.Peek().Tok {
-				st_op.Push(&(*arr)[i])
+			if (*arr)[i].Tok > st_op.Peek().Tok && st_op.Peek().Str != "(" {
+				st_op.Push((*arr)[i])
 			} else {
-				for (*arr)[i].Tok <= st_op.Peek().Tok {
-					str += st_op.Peek().Str + " "
+				for (*arr)[i].Tok <= st_op.Peek().Tok && st_op.Peek().Str != "(" {
+					str = append(str, st_op.Peek())
 					st_op.Pop()
 				}
-				st_op.Push(&(*arr)[i])
+				st_op.Push((*arr)[i])
 			}
 		}
 	}
-	for st_op.Top != -1 {
-		str += st_op.Peek().Str + " "
+	for st_op.Top != 0 {
+		str = append(str, st_op.Peek())
 		st_op.Pop()
 	}
-	fmt.Printf("%s", str)
+	return str
 }
+

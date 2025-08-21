@@ -1,6 +1,8 @@
 package stack
 
-import "polish/tokens"
+import (
+	"polish/tokens"
+)
 
 type Stack struct {
 	Arr []tokens.Token
@@ -8,29 +10,25 @@ type Stack struct {
 }
 
 func (st *Stack) Init() {
-	st.Top = -1
+	st.Top = 0
+	st.Arr = []tokens.Token{}
 }
 
-func (st *Stack) Push(el *tokens.Token) {
+func (st *Stack) Push(el tokens.Token) {
+	st.Arr = append(st.Arr, el)
 	st.Top++
-	st.Arr = append(st.Arr, *el)
 }
 
 func (st *Stack) Pop() {
 	if st.Top-1 >= 0 {
-		newSlice := make([]tokens.Token, st.Top-1)
-		copy(newSlice, st.Arr[:st.Top-1])
-		copy(st.Arr, newSlice)
+		st.Arr = st.Arr[:st.Top-1]
 		st.Top--
-	} else {
-		st.Arr = []tokens.Token{}
-		st.Top = -1
 	}
 }
 
 func (st *Stack) Peek() tokens.Token {
-	if st.Top != -1 {
-		return st.Arr[st.Top]
+	if st.Top-1 >= 0 {
+		return st.Arr[st.Top-1]
 	}
-	return tokens.Token{}
+	return tokens.Token{Str: "", Tok: 0}
 }
