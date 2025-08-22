@@ -133,13 +133,13 @@ func CheckOper(arr *[]Token) error {
 	for i := range *arr {
 		if (*arr)[i].Tok == Num || (*arr)[i].Tok == Var {
 			if i+1 >= len(*arr) && i-1 > 0 && (*arr)[i-1].Tok != PlusMinus && (*arr)[i-1].Tok != MultDiv {
-				return errors.New("1между числами должен быть знак")
+				return errors.New("между числами должен быть знак")
 			}
 			if (i+1 < len(*arr) && ((*arr)[i+1].Tok == Num || (*arr)[i+1].Tok == Var)) || (i-1 > 0 && ((*arr)[i-1].Tok == Num || (*arr)[i-1].Tok == Var)) {
-				return errors.New("2между числами должен быть знак")
+				return errors.New("между числами должен быть знак")
 			}
 			if i-1 >= 0 && i+1 < len(*arr) && (*arr)[i-1].Tok != PlusMinus && (*arr)[i-1].Tok != MultDiv && (*arr)[i-1].Str != "(" {
-				return errors.New("3между числами должен быть знак")
+				return errors.New("между числами должен быть знак")
 			}
 		}
 	}
