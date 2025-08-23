@@ -7,7 +7,7 @@ import (
 	"unicode"
 )
 
-// определение типа токена
+// определение типа токена и приоритет
 const (
 	Num = 1
 	Var
@@ -36,7 +36,7 @@ func Tokenize(str string, arr *[]Token) error {
 	for i != len(rune_str) {
 		if unicode.IsDigit(rune_str[i]) {
 			start := i
-			for unicode.IsDigit(rune_str[i]) {
+			for unicode.IsDigit(rune_str[i]) && i < len(rune_str) {
 				i++
 			}
 			num := []rune(rune_str[start:i])
@@ -56,7 +56,7 @@ func Tokenize(str string, arr *[]Token) error {
 		}
 		if unicode.IsLetter(rune_str[i]) {
 			start := i
-			for unicode.IsLetter(rune_str[i]) {
+			for unicode.IsLetter(rune_str[i]) && i < len(rune_str) {
 				i++
 			}
 			res := string(rune_str[start:i])
@@ -82,43 +82,27 @@ func CheckParen(arr *[]Token) error {
 	// далее под каждую открывающуюся скобку ищем закрывающаюся
 	count := 0
 	for i := range *arr {
-		if (*arr)[i].Str == "(" {
-			count += -1
-
-		}
-		if (*arr)[i].Str == ")" {
-			count += 1
+		switch (*arr)[i].Str {
+		case "(":
+			if i+1 < len(*arr) && (*arr)[i+1].Str == ")" {
+				return errors.New("пустые скобки")
+			}
+			count++
+		case ")":
+			count--
+			if count < 0 {
+				return errors.New("неверный порядок расстановки скобок")
+			}
 		}
 	}
 	if count != 0 {
-		return errors.New("нарушен баланс скобок")
-	} else {
-		for i := range *arr {
-			if (*arr)[i].Str == ")" && count == 0 {
-				return errors.New("неверный порядок расстановки скобок")
-			} else {
-				if (*arr)[i].Str == "(" {
-					if i+1 < len(*arr) {
-						j := i + 1
-						count -= 1
-						for (*arr)[j].Str != ")" {
-							j++
-						}
-						if (*arr)[j].Str == ")" && j-i == 1 {
-							return errors.New("пустые скобки")
-						}
-					} else {
-						return errors.New("неверный порядок расстановки скобок")
-					}
-				}
-			}
-		}
+		return errors.New("несбалансированные скобки")
 	}
 	return nil
 }
 
 func CheckOper(arr *[]Token) error {
-	// корректность ввода операторов
+	// корректность ввода операторов (не учитывает унарные операции)
 	for i := range *arr {
 		if (*arr)[i].Tok == PlusMinus || (*arr)[i].Tok == MultDiv {
 			if i+1 >= len(*arr) || i-1 < 0 {

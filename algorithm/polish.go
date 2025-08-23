@@ -9,34 +9,39 @@ import (
 	"strconv"
 )
 
+const (
+	Width  = 80
+	Height = 25
+	YMin   = -1
+	YMax   = 1
+)
+
 func PolishNotation() {
+	// PolishNotation входная точка программы
 	var list string
-	err := tokens.ReadString(&list)
-	if err == nil {
-		var arr []tokens.Token
-		err = tokens.Tokenize(list, &arr)
-		if err == nil {
-			err = tokens.CheckToken(&arr)
-			if err != nil {
-				fmt.Printf("Error: %s", err)
-			} else {
-				res := Algorithm(&arr)
-				err = DrawGraphic(&res)
-				if err != nil {
-					fmt.Printf("Error: %s", err)
-				}
-			}
-		} else {
-			fmt.Printf("Error: %s", err)
-		}
-	} else {
+	if err := tokens.ReadString(&list); err != nil {
 		fmt.Printf("Error: %s", err)
+		return
+	}
+	var arr []tokens.Token
+	if err := tokens.Tokenize(list, &arr); err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+	if err := tokens.CheckToken(&arr); err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+	res := Algorithm(&arr)
+	if err := DrawGraphic(&res); err != nil {
+		fmt.Printf("Error: %s", err)
+		return
 	}
 }
 
 func Algorithm(arr *[]tokens.Token) []tokens.Token {
+	// Algorithm получает постфиксную строку алгоритмом Дейкстры
 	var st_op stack.Stack
-	st_op.Init()
 	var str []tokens.Token
 	for i := range *arr {
 		if (*arr)[i].Tok == tokens.Var || (*arr)[i].Tok == tokens.Num {
@@ -44,7 +49,7 @@ func Algorithm(arr *[]tokens.Token) []tokens.Token {
 		} else if (*arr)[i].Str == "(" {
 			st_op.Push((*arr)[i])
 		} else if (*arr)[i].Str == ")" {
-			for st_op.Peek().Str != "(" && st_op.Top != -1 {
+			for st_op.Peek().Str != "(" && !st_op.IsEmpty() {
 				str = append(str, st_op.Peek())
 				st_op.Pop()
 			}
@@ -61,7 +66,7 @@ func Algorithm(arr *[]tokens.Token) []tokens.Token {
 			}
 		}
 	}
-	for st_op.Top != 0 {
+	for !st_op.IsEmpty() {
 		str = append(str, st_op.Peek())
 		st_op.Pop()
 	}
@@ -69,8 +74,8 @@ func Algorithm(arr *[]tokens.Token) []tokens.Token {
 }
 
 func Calculate(arr []tokens.Token, num float64) (float64, error) {
+	// Calculate вычисляет значение выражения
 	var st_num stack.Stack
-	st_num.Init()
 	workArr := make([]tokens.Token, len(arr))
 	copy(workArr, arr)
 	for i := range workArr {
@@ -123,7 +128,7 @@ func Calculate(arr []tokens.Token, num float64) (float64, error) {
 				st_num.Push(tokens.Token{Str: strconv.FormatFloat(math.Log(num1), 'f', -1, 64)})
 			case "sqrt":
 				if num1 < 0 {
-					return 0, errors.New("операция ln: число не соответствует допустимым значениям")
+					return 0, errors.New("операция sqrt: число не соответствует допустимым значениям")
 				}
 				st_num.Push(tokens.Token{Str: strconv.FormatFloat(math.Sqrt(num1), 'f', -1, 64)})
 			case "ctg":
@@ -144,31 +149,32 @@ func Calculate(arr []tokens.Token, num float64) (float64, error) {
 }
 
 func DrawGraphic(arr *[]tokens.Token) error {
-	var res [25][80]int
+	//DrawGraphic вычисляет значения функции и выводит на экран готовый результат
+	var res [Height][Width]int
 	step := (4 * math.Pi) / 79
-	for i := range 80 {
+	for i := 0; i < Width; i++ {
 		val, err := Calculate(*arr, (step * float64(i)))
 		if err != nil {
 			return err
 		}
-		yNormal := 24 - int(math.Round((val+1)/2*24))
-		if yNormal >= 0 && yNormal <= 24 {
+		yNormal := 24 - int(math.Round(24*(val-YMin)/(YMax-YMin)))
+		if yNormal >= 0 && yNormal < Height {
 			res[yNormal][i] = 1
 		}
 	}
-	for i := range 25 {
-		for j := range 80 {
-			if res[i][j] == 0 && j+1 != 80 {
+	for i := 0; i < Height; i++ {
+		for j := 0; j < Width; j++ {
+			if res[i][j] == 0 && j+1 != Width {
 				fmt.Print(". ")
-			} else if res[i][j] == 1 && j+1 != 80 {
+			} else if res[i][j] == 1 && j+1 != Width {
 				fmt.Print("* ")
-			} else if res[i][j] == 1 && j+1 == 80 {
+			} else if res[i][j] == 1 && j+1 == Width {
 				fmt.Print("*")
 			} else {
 				fmt.Print(".")
 			}
 		}
-		if i+1 != 25 {
+		if i+1 != Height {
 			fmt.Print("\n")
 		}
 	}
