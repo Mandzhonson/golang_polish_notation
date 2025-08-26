@@ -23,17 +23,19 @@ func PolishNotation() {
 		fmt.Printf("Error: %s", err)
 		return
 	}
-	var arr []tokens.Token
-	if err := tokens.Tokenize(list, &arr); err != nil {
+	arr, err := tokens.Tokenize(list)
+	if err != nil {
 		fmt.Printf("Error: %s", err)
 		return
 	}
-	if err := tokens.CheckToken(&arr); err != nil {
+	fmt.Println(arr)
+	if err = tokens.CheckToken(arr); err != nil {
 		fmt.Printf("Error: %s", err)
 		return
 	}
+
 	res := Algorithm(&arr)
-	if err := DrawGraphic(&res); err != nil {
+	if err = DrawGraphic(&res); err != nil {
 		fmt.Printf("Error: %s", err)
 		return
 	}
@@ -138,6 +140,13 @@ func Calculate(arr []tokens.Token, num float64) (float64, error) {
 					return 0, errors.New("операция ctg: sin не должен быть равен 0")
 				}
 				st_num.Push(tokens.Token{Str: strconv.FormatFloat(cos/sin, 'f', -1, 64)})
+			case "tan":
+				cos := math.Cos(num1)
+				sin := math.Sin(num1)
+				if cos == 0 {
+					return 0, errors.New("операция tan: cos не должен быть равен 0")
+				}
+				st_num.Push(tokens.Token{Str: strconv.FormatFloat(sin/cos, 'f', -1, 64)})
 			}
 		}
 	}
