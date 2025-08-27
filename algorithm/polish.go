@@ -18,8 +18,8 @@ const (
 
 func PolishNotation() {
 	// PolishNotation входная точка программы
-	var list string
-	if err := tokens.ReadString(&list); err != nil {
+	list, err := tokens.ReadString()
+	if err != nil {
 		fmt.Printf("Error: %s", err)
 		return
 	}
@@ -28,43 +28,42 @@ func PolishNotation() {
 		fmt.Printf("Error: %s", err)
 		return
 	}
-	fmt.Println(arr)
 	if err = tokens.CheckToken(arr); err != nil {
 		fmt.Printf("Error: %s", err)
 		return
 	}
 
-	res := Algorithm(&arr)
-	if err = DrawGraphic(&res); err != nil {
+	res := Algorithm(arr)
+	if err = DrawGraphic(res); err != nil {
 		fmt.Printf("Error: %s", err)
 		return
 	}
 }
 
-func Algorithm(arr *[]tokens.Token) []tokens.Token {
+func Algorithm(arr []tokens.Token) []tokens.Token {
 	// Algorithm получает постфиксную строку алгоритмом Дейкстры
 	var st_op stack.Stack
 	var str []tokens.Token
-	for i := range *arr {
-		if (*arr)[i].Tok == tokens.Var || (*arr)[i].Tok == tokens.Num {
-			str = append(str, (*arr)[i])
-		} else if (*arr)[i].Str == "(" {
-			st_op.Push((*arr)[i])
-		} else if (*arr)[i].Str == ")" {
+	for i := range arr {
+		if arr[i].Tok == tokens.Var || arr[i].Tok == tokens.Num {
+			str = append(str, arr[i])
+		} else if arr[i].Str == "(" {
+			st_op.Push(arr[i])
+		} else if arr[i].Str == ")" {
 			for st_op.Peek().Str != "(" && !st_op.IsEmpty() {
 				str = append(str, st_op.Peek())
 				st_op.Pop()
 			}
 			st_op.Pop()
 		} else {
-			if (*arr)[i].Tok > st_op.Peek().Tok && st_op.Peek().Str != "(" {
-				st_op.Push((*arr)[i])
+			if arr[i].Tok > st_op.Peek().Tok && st_op.Peek().Str != "(" {
+				st_op.Push(arr[i])
 			} else {
-				for (*arr)[i].Tok <= st_op.Peek().Tok && st_op.Peek().Str != "(" {
+				for arr[i].Tok <= st_op.Peek().Tok && st_op.Peek().Str != "(" {
 					str = append(str, st_op.Peek())
 					st_op.Pop()
 				}
-				st_op.Push((*arr)[i])
+				st_op.Push(arr[i])
 			}
 		}
 	}
@@ -88,7 +87,7 @@ func Calculate(arr []tokens.Token, num float64) (float64, error) {
 		}
 		if workArr[i].Tok == tokens.Num {
 			st_num.Push(workArr[i])
-		} else if workArr[i].Tok != tokens.Func {
+		} else if workArr[i].Tok != tokens.Func && workArr[i].Tok != tokens.UnaryMinus {
 			num2, err := strconv.ParseFloat(st_num.Peek().Str, 64)
 			if err != nil {
 				return 0, err
@@ -147,6 +146,9 @@ func Calculate(arr []tokens.Token, num float64) (float64, error) {
 					return 0, errors.New("операция tan: cos не должен быть равен 0")
 				}
 				st_num.Push(tokens.Token{Str: strconv.FormatFloat(sin/cos, 'f', -1, 64)})
+			case "-":
+				st_num.Push(tokens.Token{Str: strconv.FormatFloat(num1*(-1), 'f', -1, 64)})
+
 			}
 		}
 	}
@@ -157,12 +159,12 @@ func Calculate(arr []tokens.Token, num float64) (float64, error) {
 	return res, nil
 }
 
-func DrawGraphic(arr *[]tokens.Token) error {
+func DrawGraphic(arr []tokens.Token) error {
 	//DrawGraphic вычисляет значения функции и выводит на экран готовый результат
 	var res [Height][Width]int
 	step := (4 * math.Pi) / 79
 	for i := 0; i < Width; i++ {
-		val, err := Calculate(*arr, (step * float64(i)))
+		val, err := Calculate(arr, (step * float64(i)))
 		if err != nil {
 			return err
 		}
